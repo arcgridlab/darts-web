@@ -1,9 +1,10 @@
-// src/main.tsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HitRatePage from "./pages/hitRate/HitRatePage";
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App'
+import './index.css'
 
-<BrowserRouter>
-  <Routes>
-    <Route path="/hit-rate" element={<HitRatePage />} />
-  </Routes>
-</BrowserRouter>
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)

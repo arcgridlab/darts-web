@@ -1,136 +1,76 @@
-import { useMemo, useState } from "react";
-import { saveHitRate } from "./hitRateApi";
+import { useMemo, useState } from 'react'
+import { GamePage, MetricStrip } from '../../components/GamePage'
+import { saveRecord, todayString } from '../../data/storage'
 
-const ROUNDS = 8;
-const DARTS_PER_ROUND = 3;
-const TARGETS = ["BULL", "20", "19", "18", "17", "16", "15"];
-
-const today = () => new Date().toISOString().slice(0, 10);
+const ROUNDS = 8
+const TARGETS = ['BULL', '20', '19', '18', '17', '16', '15']
 
 export default function HitRatePage() {
-  const [date, setDate] = useState(today());
-  const [target, setTarget] = useState("BULL");
-  // 各ラウンドの命中数(0〜3)。未入力は null
-  const [hits, setHits] = useState<(number | null)[]>(
-    Array(ROUNDS).fill(null)
-  );
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
+  const [target, setTarget] = useState('BULL')
+  const [started, setStarted] = useState(false)
+  const [startedAt, setStartedAt] = useState<number | null>(null)
+  const [hits, setHits] = useState<(number | null)[]>(Array(ROUNDS).fill(null))
+  const [message, setMessage] = useState('')
   const stats = useMemo(() => {
-    const entered = hits.filter((h): h is number => h !== null);
-    const hitCount = entered.reduce((a, b) => a + b, 0);
-    const throws = entered.length * DARTS_PER_ROUND;
-    const rate = throws ? (hitCount / throws) * 100 : 0;
-    const hat = entered.filter((h) => h === DARTS_PER_ROUND).length;
-    return { rounds: entered.length, hitCount, throws, rate, hat };
-  }, [hits]);
+    const entered = hits.filter((value): value is number => value !== null)
+    const hitCount = entered.reduce((sum, value) => sum + value, 0)
+    const throws = entered.length * 3
+    return { rounds: entered.length, hitCount, throws, rate: throws ? hitCount / throws * 100 : 0, hat: entered.filter((value) => value === 3).length }
+  }, [hits])
+  const finished = started && stats.rounds === ROUNDS
 
-  const finished = stats.rounds === ROUNDS;
+  const resetGame = () => {
+    setHits(Array(ROUNDS).fill(null))
+    setStarted(false)
+    setStartedAt(null)
+    setMessage('')
+  }
 
-  const setRound = (i: number, value: number) =>
-    setHits((prev) => prev.map((h, idx) => (idx === i ? value : h)));
+  const startGame = () => {
+    setHits(Array(ROUNDS).fill(null))
+    setStarted(true)
+    setStartedAt(Date.now())
+    setMessage('')
+  }
 
-  const reset = () => {
-    setHits(Array(ROUNDS).fill(null));
-    setMessage("");
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    setMessage("");
-    try {
-      await saveHitRate({
-        date,
-        target,
-        rounds: ROUNDS,
-        throws: stats.throws,
-        hit_count: stats.hitCount,
-        hit_rate: Math.round(stats.rate * 10) / 10,
-        hat_count: stats.hat,
-      });
-      setMessage("保存しました");
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "エラーが発生しました");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const saveGame = () => {
+    if (!finished || message || startedAt === null) return
+    const duration = Math.max(1, Math.ceil((Date.now() - startedAt) / 60_000))
+    saveRecord({ type: 'hitRate', date: todayString(), duration, target, rounds: ROUNDS, throws: stats.throws, hits: stats.hitCount, hitRate: Math.round(stats.rate * 10) / 10, hat: stats.hat })
+    setMessage('結果を保存しました')
+  }
 
   return (
-    <div style={{ maxWidth: 480, margin: "0 auto", padding: 16 }}>
-      <h1>Hit率</h1>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-        <select value={target} onChange={(e) => setTarget(e.target.value)}>
-          {TARGETS.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
+    <GamePage>
+      <MetricStrip items={[
+        { label: 'ROUND', value: `${stats.rounds} / ${ROUNDS}`, unit: 'R' },
+        { label: 'HIT RATE', value: `${stats.rate.toFixed(1)}%` },
+        { label: 'HITS', value: `${stats.hitCount} / ${stats.throws}` },
+        { label: 'HAT', value: stats.hat, unit: ' TIMES' },
+      ]} />
+      <div className="game-workspace hit-workspace">
+        <section className="play-column">
+          <div className="input-section target-select-section">
+            <div className="input-title target-select-row">
+              <label htmlFor="hit-rate-target">ターゲット</label>
+              <select id="hit-rate-target" className="field-control target-select" value={target} onChange={(event) => setTarget(event.target.value)} disabled={started}>
+                {TARGETS.map((item) => <option key={item}>{item}</option>)}
+              </select>
+              <button type="button" className="button button-primary target-control-button" disabled={started && (!finished || !message)} onClick={startGame}>{message ? '次を開始' : started ? '開始済み' : '開始'}</button>
+              <button type="button" className="button button-secondary target-control-button" onClick={resetGame}>リセット</button>
+            </div>
+          </div>
+          <div className="round-list">
+            {hits.map((hit, index) => <div className="round-item" key={index}>
+              <span className="round-label">R{String(index + 1).padStart(2, '0')}</span>
+              <div className="choice-inline">{[0, 1, 2, 3].map((value) => <button type="button" className={`small-choice ${hit === value ? 'selected' : ''}`} key={value} disabled={!started || Boolean(message)} onClick={() => { setHits((previous) => previous.map((item, position) => position === index ? value : item)); setMessage('') }}><strong>{value}</strong><small>{value === 1 ? 'HIT' : value === 3 ? 'HAT' : ''}</small></button>)}</div>
+            </div>)}
+          </div>
+        </section>
+        <aside className="detail-column">
+          <button type="button" className="button button-primary full-button" disabled={!finished || Boolean(message)} onClick={saveGame}>{message ? '保存済み' : '結果を保存'} <span aria-hidden="true">↗</span></button>
+        </aside>
       </div>
-
-      <div
-        style={{
-          padding: 12,
-          marginBottom: 16,
-          border: "1px solid #ccc",
-          borderRadius: 8,
-        }}
-      >
-        <div style={{ fontSize: 32, fontWeight: 700 }}>
-          {stats.rate.toFixed(1)}%
-        </div>
-        <div>
-          {stats.hitCount} / {stats.throws} 本 ・ ハット {stats.hat} 回 ・{" "}
-          {stats.rounds} / {ROUNDS} R
-        </div>
-      </div>
-
-      {hits.map((h, i) => (
-        <div
-          key={i}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 8,
-          }}
-        >
-          <span style={{ width: 36 }}>R{i + 1}</span>
-          {[0, 1, 2, 3].map((n) => (
-            <button
-              key={n}
-              onClick={() => setRound(i, n)}
-              style={{
-                width: 48,
-                height: 48,
-                fontSize: 18,
-                borderRadius: 8,
-                border: "1px solid #888",
-                background: h === n ? "#2563eb" : "transparent",
-                color: h === n ? "#fff" : "inherit",
-              }}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-      ))}
-
-      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-        <button onClick={reset}>リセット</button>
-        <button onClick={handleSave} disabled={!finished || saving}>
-          {saving ? "保存中..." : "結果を保存"}
-        </button>
-      </div>
-      {message && <p>{message}</p>}
-    </div>
-  );
+    </GamePage>
+  )
 }
