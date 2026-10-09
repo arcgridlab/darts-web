@@ -4,7 +4,7 @@ import HistoryPage from './pages/history/HistoryPage'
 import HitRatePage from './pages/hitRate/HitRatePage'
 import InBullRatePage from './pages/inBullRate/InBullRatePage'
 import TenMarkPage from './pages/10Mark/TenMarkPage'
-import { loadRecords, saveRecord, STORAGE_EVENT, todayString } from './data/storage'
+import { getDailySummary, loadRecords, saveRecord, STORAGE_EVENT, todayString } from './data/storage'
 import type { SessionRecord } from './data/storage'
 import './App.css'
 
@@ -28,13 +28,7 @@ function DailySummary() {
     }
   }, [])
 
-  const todayRecords = records.filter((record) => record.date === todayString())
-  const practiceMinutes = todayRecords.reduce((total, record) => total + Number(record.duration ?? 0), 0)
-  const todayThrows = todayRecords.reduce((total, record) => {
-    if (record.type !== 'arrange') return total + Number(record.throws ?? 0)
-    return total + ['score1', 'score2', 'score3'].filter((key) => record[key] !== '' && record[key] !== null && record[key] !== undefined).length
-  }, 0)
-  const todayHats = todayRecords.reduce((total, record) => total + Number(record.hat ?? 0), 0)
+  const { duration: practiceMinutes, throws: todayThrows, hats: todayHats } = getDailySummary(records, todayString())
 
   return (
     <section className="daily-summary" aria-label="本日の練習状況">
@@ -140,6 +134,7 @@ function AppFrame() {
         <DailySummary />
         <Routes>
           <Route path="/" element={<Navigate to="/hit-rate" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/10mark" element={<TenMarkPage />} />
           <Route path="/hit-rate" element={<HitRatePage />} />
           <Route path="/in-bull" element={<InBullRatePage />} />
@@ -152,5 +147,5 @@ function AppFrame() {
 }
 
 export default function App() {
-  return <BrowserRouter><AppFrame /></BrowserRouter>
+  return <BrowserRouter basename="/darts-web"><AppFrame /></BrowserRouter>
 }

@@ -195,7 +195,7 @@
 .nav-item.active { box-shadow: inset 0 -3px var(--lime); }
 .live-dot, .footer-dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--lime); }
 .main-content { min-height: calc(100vh - 68px); margin-left: 0; background-color: var(--paper); background-image: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(23,76,59,.025) 40px); }
-.daily-summary { display: grid; grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr)); padding: 9px clamp(20px, 4vw, 58px); border-bottom: 1px solid var(--line); background: var(--white); }
+.daily-summary { position: sticky; top: 68px; z-index: 4; display: grid; grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr)); padding: 9px clamp(20px, 4vw, 58px); border-bottom: 1px solid var(--line); background: var(--white); }
 .daily-summary-item { display: flex; min-width: 0; align-items: baseline; justify-content: space-between; gap: 9px; padding: 0 15px; border-right: 1px solid var(--line); }
 .daily-summary-item:first-child { padding-left: 0; }
 .daily-summary-item:last-child { padding-right: 0; border-right: 0; }
@@ -203,7 +203,8 @@
 .daily-summary-item strong { color: var(--green); font: 20px/1.15 Georgia, serif; white-space: nowrap; }
 .daily-summary-item strong small { margin-left: 3px; color: var(--muted); font: 9px/1 var(--mono); }
 .daily-summary-date strong { font: 11px/1.15 var(--mono); }
-.page-shell { width: min(100%, 1120px); margin: 0 auto; padding: 54px 58px 72px; animation: enter .32s ease-out both; }
+.page-shell { width: min(100%, 1120px); margin: 0 auto; padding: 28px 58px 72px; animation: enter .32s ease-out both; }
+.page-shell.game-page { padding: 3px 36px 40px; }
 @keyframes enter { from { opacity: .5; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
 .dashboard-page > .dashboard-heading { padding-bottom: 0; border-bottom: 0; }
@@ -250,7 +251,10 @@
 .dashboard-footer p { margin-left: auto; color: var(--muted); font-size: 10px; }
 
 .metric-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 26px; border-block: 1px solid var(--line); }
+.game-page > .metric-strip { margin-top: 0; }
+.metric-strip.hit-rate-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .game-page > .metric-strip.tenmark-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; }
+.game-page:has(.tenmark-metrics) .game-workspace { padding-top: 3px; }
 .arrange-top-strip {
   grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(150px, 180px);
   align-items: stretch;
@@ -306,7 +310,7 @@
 .section-kicker, .side-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--green); font: 9px/1.2 var(--mono); letter-spacing: .6px; }
 .section-kicker { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 .side-section-heading { color: var(--muted); }
-.target-board { display: grid; min-height: 214px; align-content: center; justify-items: center; margin: 0 0 23px; padding: 20px; color: #fff; background: var(--green); text-align: center; }
+.target-board { display: grid; min-height: 150px; align-content: center; justify-items: center; margin: 0 0 23px; padding: 8px 15px; color: #fff; background: var(--green); text-align: center; }
 .target-status-list { display: grid; width: 100%; gap: 8px; }
 .target-status-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) 42px; align-items: center; gap: 10px; color: #d1dfd3; }
 .target-status-name { font: 12px/1 var(--mono); }
@@ -314,7 +318,7 @@
 .target-status-track i { display: block; height: 100%; background: var(--lime); transition: width .2s; }
 .target-status-value { color: #d1dfd3; text-align: right; font: 11px/1 var(--mono); }
 .target-status-row.is-current .target-status-name, .target-status-row.is-current .target-status-value { color: var(--lime); }
-.input-section { margin-top: 20px; }
+.input-section { margin-top: 10px; }
 .input-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 5px 12px; margin-bottom: 10px; }
 .input-title strong { color: var(--ink); font-size: 12px; }
 .input-title span { color: var(--muted); font-size: 10px; }
@@ -326,15 +330,10 @@
 .choice-button strong { font: 25px/1 Georgia, serif; }
 .choice-button small { color: var(--muted); font: 8px/1 var(--mono); }
 .choice-button:hover:not(:disabled) small, .choice-button.selected small { color: #d1dfd3; }
-.dart-entry-list { display: grid; gap: 7px; }
-.dart-entry-list { display: grid; gap: 12px; }
-.dart-entry-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: center; gap: 8px; }
-.dart-entry-label { color: var(--muted); font: 9px/1 var(--mono); }
-.dart-entry-row .choice-row { width: 100%; }
-.dart-entry-row .outcome-button { min-height: 52px; }
-.dart-entry-row .outcome-button strong { font: 15px/1 var(--mono); }
-.dart-entry-row .outcome-button small { font-size: 8px; }
-.dart-entry-row.is-active .dart-entry-label { color: var(--green); font-weight: 700; }
+.tenmark-round-item { grid-template-columns: 45px minmax(0, 1fr); }
+.tenmark-choice-inline { display: flex; justify-content: flex-start; gap: 6px; }
+.tenmark-round-item .tenmark-choice-inline .small-choice { width: fit-content; min-width: 70px; flex: 0 0 auto; padding-inline: 10px; }
+.tenmark-round-item.is-active .round-label { color: var(--green); font-weight: 700; }
 .play-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .play-actions .button { min-height: 38px; font-size: 11px; }
 .target-list { display: grid; gap: 15px; padding: 6px 0 10px; }
@@ -352,6 +351,7 @@
 .result-banner.result-success { color: var(--green); background: #eff5de; }
 .save-notice { margin: -7px 0 0; color: var(--green); font-size: 11px; }
 .hit-workspace { grid-template-columns: minmax(0, 1.35fr) minmax(235px, .65fr); }
+.game-page .hit-workspace { padding-top: 3px; }
 .target-select-section { margin: 0 0 17px; }
 .target-select-row { align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 8px; margin-bottom: 0; }
 .target-select-row label { color: var(--ink); font-size: 12px; font-weight: 600; }
@@ -385,7 +385,7 @@
 .rate-display strong { color: var(--green); font: 43px/1 Georgia, serif; }
 .rate-display strong small, .rate-pair strong small { margin-left: 3px; font-size: 16px; }
 .rate-display span, .rate-pair span { color: var(--muted); font: 9px/1 var(--mono); letter-spacing: .4px; }
-.score-board { display: grid; min-height: 226px; align-content: center; justify-items: center; gap: 11px; margin-bottom: 22px; padding: 23px; color: white; background: var(--green); }
+.score-board { display: grid; min-height: 150px; align-content: center; justify-items: center; gap: 8px; margin-bottom: 22px; padding: 12px 23px; color: white; background: var(--green); }
 .score-caption { color: #bdd0c0; font: 9px/1 var(--mono); letter-spacing: 1px; }
 .score-board > strong { color: var(--lime); font: 60px/.95 Georgia, serif; }
 .score-board > strong small { color: #d1dfd3; font: 17px/1 Georgia, serif; }
@@ -455,8 +455,17 @@
 .history-toolbar > div > span { display: block; margin-top: 4px; color: var(--muted); font: 9px/1 var(--mono); }
 .history-filter { display: grid; min-width: 160px; gap: 6px; color: var(--muted); font-size: 10px; }
 .history-filter .field-control { height: 37px; }
+.history-toolbar-actions { display: flex; align-items: flex-end; gap: 8px; }
+.history-export-button { min-height: 37px; white-space: nowrap; }
+.pdf-report { display: none; }
+.history-tabs { display: flex; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.history-tab { flex: 0 0 auto; padding: 10px 14px; border: 0; border-bottom: 2px solid transparent; color: var(--muted); background: transparent; font-size: 10px; font-weight: 600; cursor: pointer; }
+.history-tab:hover { color: var(--green); background: rgba(23,76,59,.04); }
+.history-tab.active { border-bottom-color: var(--green); color: var(--green); }
 .table-scroll { overflow: auto; border-top: 2px solid var(--green); background: var(--white); }
 .history-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; white-space: nowrap; }
+.history-table.practice-table { width: max-content; max-width: 100%; }
+.history-table.practice-table th, .history-table.practice-table td { padding-inline: 8px; }
 .history-table th { padding: 11px 12px; border-bottom: 1px solid var(--line); color: var(--muted); background: #f7f8f2; font-size: 10px; font-weight: 500; }
 .history-table td { padding: 12px; border-bottom: 1px solid #e9ece6; }
 .history-table tbody tr:last-child td { border-bottom: 0; }
@@ -470,9 +479,31 @@
 .empty-state strong { margin-top: 10px; font-size: 13px; }
 .empty-state p { margin-top: 6px; color: var(--muted); font-size: 10px; }
 
+@media print {
+  @page { size: landscape; margin: 12mm; }
+  body, #root, .app-layout, .main-content { min-height: 0 !important; background: #fff !important; }
+  .app-header, .daily-summary, .main-content > .page-shell > :not(.pdf-report) { display: none !important; }
+  .main-content { background-image: none !important; }
+  .main-content > .page-shell { width: auto; max-width: none; margin: 0; padding: 0; animation: none; }
+  .pdf-report { display: block; color: #111; font: 10pt/1.4 Georgia, serif; }
+  .pdf-report-heading { margin-bottom: 8mm; }
+  .pdf-report-heading p { margin: 0 0 2mm; color: #456452; font: 8pt/1 monospace; }
+  .pdf-report-heading h1 { margin: 0 0 2mm; font-size: 20pt; }
+  .pdf-report-heading span { color: #555; font: 8pt/1 monospace; }
+  .pdf-report-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .pdf-report-table th, .pdf-report-table td { padding: 2.5mm 2mm; border: 1px solid #cbd1ca; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+  .pdf-report-table th { background: #edf1eb; font-size: 8pt; }
+  .pdf-report-table td { font-size: 8pt; }
+  .pdf-report-table th:nth-child(1) { width: 15%; }
+  .pdf-report-table th:nth-child(2) { width: 15%; }
+  .pdf-report-table th:nth-child(3) { width: 12%; }
+  .pdf-report-table tr { break-inside: avoid; }
+}
+
 @media (max-width: 900px) {
   .main-content { margin-left: 0; }
-  .page-shell { padding: 42px 32px 60px; }
+  .page-shell { padding: 24px 32px 60px; }
+  .page-shell.game-page { padding: 3px 24px 32px; }
   .dashboard-grid { grid-template-columns: 1fr; gap: 17px; }
   .practice-panel { max-width: none; }
 }
@@ -483,13 +514,14 @@
   .nav-item { min-width: 0; min-height: 48px; flex: 1 1 20%; justify-content: center; padding: 0 2px; font-size: clamp(7px, 2.25vw, 9px); }
   .nav-item.active { box-shadow: inset 0 -2px var(--lime); }
   .main-content { min-height: calc(100vh - 48px); padding-bottom: 0; }
-  .daily-summary { padding: 7px 12px; }
+  .daily-summary { top: 48px; padding: 7px 12px; }
   .daily-summary-item { align-items: flex-start; flex-direction: column; gap: 3px; padding: 0 7px; }
   .daily-summary-item > span { font-size: 8px; }
   .daily-summary-item strong { font-size: 16px; }
   .daily-summary-item strong small { font-size: 7px; }
   .daily-summary-date strong { font-size: 9px; }
-  .page-shell { padding: 18px 14px 20px; }
+  .page-shell { padding: 12px 14px 20px; }
+  .page-shell.game-page { padding: 3px 8px 12px; }
   .page-heading { align-items: flex-start; padding-bottom: 20px; }
   .page-heading h1 { font-size: 25px; }
   .today-stamp { min-width: 73px; padding-left: 11px; }
@@ -517,10 +549,14 @@
   .metric-item:nth-child(2) { border-right: 0; }
   .metric-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .metric-item strong { font-size: 22px; }
+  .metric-strip.hit-rate-metrics .metric-item:nth-child(2) { border-right: 1px solid var(--line); }
+  .metric-strip.hit-rate-metrics .metric-item:nth-child(-n+2) { border-bottom: 0; }
+  .metric-strip.hit-rate-metrics .metric-item strong { font-size: 13px; }
   .game-workspace { padding-top: 18px; }
   .detail-column { grid-template-columns: 1fr 1fr; padding: 15px; }
   .detail-column > .field-label { grid-column: 1 / -1; }
-  .target-board, .score-board, .checkout-board { min-height: 195px; }
+  .target-board, .score-board { min-height: 150px; }
+  .checkout-board { min-height: 195px; }
   .target-number, .score-board > strong { font-size: 52px; }
   .target-track { gap: 2px; }
   .target-track span { width: 27px; height: 27px; flex-basis: 27px; }
@@ -544,7 +580,8 @@
 @media (max-width: 620px) and (orientation: portrait) {
   .app-layout { min-height: 100dvh; }
   .main-content { min-height: calc(100dvh - 48px); }
-  .page-shell { padding: 12px 12px 16px; }
+  .page-shell { padding: 8px 12px 16px; }
+  .page-shell.game-page { padding: 3px 8px 8px; }
   .page-heading { gap: 8px; padding-bottom: 11px; }
   .page-heading .eyebrow { margin-bottom: 5px; font-size: 8px; }
   .page-heading h1 { font-size: 20px; line-height: 1.2; }
@@ -562,6 +599,7 @@
   .game-workspace { gap: 9px; padding-top: 10px; }
   .section-kicker { padding-bottom: 6px; font-size: 8px; }
   .target-board, .score-board, .checkout-board { min-height: 100px; margin-bottom: 10px; padding: 10px; }
+  .target-board { padding: 8px 15px; }
   .target-status-list { gap: 6px; }
   .target-status-row { grid-template-columns: 40px minmax(0, 1fr) 36px; gap: 7px; }
   .target-status-name, .target-status-value { font-size: 10px; }
@@ -577,12 +615,8 @@
   .choice-button { min-height: 53px; gap: 3px; }
   .choice-button strong { font-size: 19px; }
   .choice-button small { font-size: 6px; }
-  .dart-entry-list { gap: 4px; }
-  .dart-entry-row { grid-template-columns: 36px repeat(4, minmax(0, 1fr)); gap: 4px; }
-  .dart-entry-label { font-size: 7px; }
-  .dart-entry-row .choice-button { min-height: 34px; gap: 2px; }
-  .dart-entry-row .choice-button strong { font-size: 15px; }
-  .dart-entry-row .choice-button small { font-size: 5px; }
+  .tenmark-round-item { grid-template-columns: 36px minmax(0, 1fr); gap: 4px; }
+  .tenmark-choice-inline { gap: 4px; }
   .outcome-button { min-height: 54px; gap: 4px; }
   .outcome-button strong { font-size: 12px; }
   .outcome-button small { font-size: 7px; }
@@ -625,6 +659,9 @@
   .history-toolbar > div > span { font-size: 8px; }
   .history-filter { width: 44%; min-width: 0; gap: 3px; font-size: 8px; }
   .history-filter .field-control { height: 31px; }
+  .history-toolbar-actions { width: 100%; }
+  .history-toolbar-actions .history-filter { flex: 1; width: auto; }
+  .history-export-button { min-height: 31px; }
   .table-scroll { max-height: calc(100dvh - 220px); }
   .history-table th, .history-table td { padding: 8px; }
   .empty-state { min-height: 140px; }
@@ -657,16 +694,13 @@
   .metric-strip { margin-top: 7px; }
   .game-workspace { gap: 6px; padding-top: 7px; }
   .target-board, .score-board, .checkout-board { min-height: 88px; margin-bottom: 7px; }
-  .target-board { padding: 7px; }
+  .target-board { padding: 8px 15px; }
   .target-status-list { gap: 4px; }
   .target-status-row { grid-template-columns: 34px minmax(0, 1fr) 34px; gap: 5px; }
   .target-status-name, .target-status-value { font-size: 9px; }
   .target-status-track { height: 4px; }
-  .dart-entry-list { gap: 3px; }
-  .dart-entry-row { grid-template-columns: 32px repeat(4, minmax(0, 1fr)); gap: 3px; }
-  .dart-entry-row .choice-button { min-height: 29px; padding: 2px; }
-  .dart-entry-row .choice-button strong { font-size: 13px; }
-  .dart-entry-row .choice-button small { font-size: 4px; }
+  .tenmark-round-item { grid-template-columns: 32px minmax(0, 1fr); gap: 3px; }
+  .tenmark-choice-inline { gap: 3px; }
   .hit-workspace .round-list { display: grid; grid-template-columns: minmax(0, 1fr); }
   .hit-workspace .round-item { grid-template-columns: 27px minmax(0, 1fr); min-height: 29px; gap: 2px; }
   .hit-workspace .round-total, .hit-workspace .detail-column .rate-display { display: none; }
@@ -681,16 +715,16 @@
   .game-page:not(:has(.hit-workspace)) > .metric-strip:not(.tenmark-metrics) { display: none; }
   .game-workspace { gap: 4px; padding-top: 5px; }
   .target-board, .score-board, .checkout-board { min-height: 78px; margin-bottom: 5px; padding: 7px; }
-  .target-board { min-height: 0; padding: 5px; }
+  .target-board { min-height: 0; padding: 8px 15px; }
   .target-number { font-size: 29px; }
-  .target-board { padding: 5px; }
+  .target-board { padding: 8px 15px; }
   .target-status-list { gap: 3px; }
   .target-status-row { grid-template-columns: 30px minmax(0, 1fr) 32px; gap: 4px; }
   .target-status-name, .target-status-value { font-size: 9px; }
   .target-status-track { height: 4px; }
   .input-section { margin-top: 7px; }
   .choice-button, .outcome-button { min-height: 47px; }
-  .dart-entry-row .choice-button { min-height: 27px; }
+  .tenmark-round-item .small-choice { min-height: 27px; }
   .detail-column { gap: 5px; padding: 8px; }
   .detail-column .field-control { height: 28px; }
   .play-actions { margin-top: 5px; }

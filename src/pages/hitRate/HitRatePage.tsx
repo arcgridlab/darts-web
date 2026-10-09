@@ -42,10 +42,9 @@ export default function HitRatePage() {
 
   return (
     <GamePage>
-      <MetricStrip items={[
+      <MetricStrip className="metric-strip hit-rate-metrics" items={[
         { label: 'ROUND', value: `${stats.rounds} / ${ROUNDS}`, unit: 'R' },
-        { label: 'HIT RATE', value: `${stats.rate.toFixed(1)}%` },
-        { label: 'HITS', value: `${stats.hitCount} / ${stats.throws}` },
+        { label: 'HIT RATE', value: `${stats.hitCount} Hit (${stats.rate.toFixed(1)}%)` },
         { label: 'HAT', value: stats.hat, unit: ' TIMES' },
       ]} />
       <div className="game-workspace hit-workspace">
