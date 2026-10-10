@@ -42,6 +42,16 @@ export default function HitRatePage() {
 
   return (
     <GamePage>
+          <div className="input-section target-select-section">
+            <div className="input-title target-select-row">
+              <label htmlFor="hit-rate-target">ターゲット</label>
+              <select id="hit-rate-target" className="field-control target-select" value={target} onChange={(event) => setTarget(event.target.value)} disabled={started}>
+                {TARGETS.map((item) => <option key={item}>{item}</option>)}
+              </select>
+              <button type="button" className="button button-primary target-control-button" disabled={started} onClick={startGame}>開始</button>
+              <button type="button" className="button button-secondary target-control-button" disabled={!started} onClick={resetGame}>リセット</button>
+            </div>
+          </div>
       <MetricStrip className="metric-strip hit-rate-metrics" items={[
         { label: 'ROUND', value: `${stats.rounds} / ${ROUNDS}`, unit: 'R' },
         { label: 'HIT RATE', value: `${stats.hitCount} Hit (${stats.rate.toFixed(1)}%)` },
@@ -49,16 +59,7 @@ export default function HitRatePage() {
       ]} />
       <div className="game-workspace hit-workspace">
         <section className="play-column">
-          <div className="input-section target-select-section">
-            <div className="input-title target-select-row">
-              <label htmlFor="hit-rate-target">ターゲット</label>
-              <select id="hit-rate-target" className="field-control target-select" value={target} onChange={(event) => setTarget(event.target.value)} disabled={started}>
-                {TARGETS.map((item) => <option key={item}>{item}</option>)}
-              </select>
-              <button type="button" className="button button-primary target-control-button" disabled={started && (!finished || !message)} onClick={startGame}>{message ? '次を開始' : started ? '開始済み' : '開始'}</button>
-              <button type="button" className="button button-secondary target-control-button" onClick={resetGame}>リセット</button>
-            </div>
-          </div>
+
           <div className="round-list">
             {hits.map((hit, index) => <div className="round-item" key={index}>
               <span className="round-label">R{String(index + 1).padStart(2, '0')}</span>

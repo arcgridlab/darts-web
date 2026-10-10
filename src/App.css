@@ -259,7 +259,11 @@
   grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(150px, 180px);
   align-items: stretch;
 }
-.tenmark-start-button { min-width: 0; min-height: 58px; align-self: stretch; padding-inline: 8px; font-size: 11px; }
+.tenmark-start-button { min-width: 0; min-height: 0; align-self: stretch; padding-block: 0; padding-inline: 8px; font-size: 11px; line-height: 1; }
+.metric-strip.tenmark-metrics .tenmark-button-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.metric-strip.tenmark-metrics .tenmark-button-group .tenmark-start-button { width: 100%; flex: 1 1 0; }
+
+
 .arrange-reset-button,
 .arrange-start-button {
   display: flex;
@@ -386,7 +390,6 @@
 .rate-display strong small, .rate-pair strong small { margin-left: 3px; font-size: 16px; }
 .rate-display span, .rate-pair span { color: var(--muted); font: 9px/1 var(--mono); letter-spacing: .4px; }
 .score-board { display: grid; min-height: 150px; align-content: center; justify-items: center; gap: 8px; margin-bottom: 22px; padding: 12px 23px; color: white; background: var(--green); }
-.score-caption { color: #bdd0c0; font: 9px/1 var(--mono); letter-spacing: 1px; }
 .score-board > strong { color: var(--lime); font: 60px/.95 Georgia, serif; }
 .score-board > strong small { color: #d1dfd3; font: 17px/1 Georgia, serif; }
 .score-rail { width: min(100%, 290px); height: 6px; background: rgba(255,255,255,.18); }
@@ -585,6 +588,7 @@
   .page-heading { gap: 8px; padding-bottom: 11px; }
   .page-heading .eyebrow { margin-bottom: 5px; font-size: 8px; }
   .page-heading h1 { font-size: 20px; line-height: 1.2; }
+
   .metric-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 10px; }
   .metric-item, .metric-item:first-child { padding: 8px 4px; }
   .metric-item:nth-child(-n+2) { border-bottom: 0; }
@@ -595,7 +599,9 @@
   .tenmark-metrics .metric-item, .tenmark-metrics .metric-item:first-child { padding-inline: 4px; }
   .tenmark-metrics .metric-item > span { font-size: 6px; }
   .tenmark-metrics .metric-item strong { font-size: 13px; }
-  .tenmark-start-button { min-height: 46px; padding-inline: 3px; font-size: 8px; }
+  .tenmark-start-button { padding-inline: 3px; font-size: 8px;  }
+
+
   .game-workspace { gap: 9px; padding-top: 10px; }
   .section-kicker { padding-bottom: 6px; font-size: 8px; }
   .target-board, .score-board, .checkout-board { min-height: 100px; margin-bottom: 10px; padding: 10px; }
@@ -606,7 +612,6 @@
   .target-status-track { height: 5px; }
   .score-board > strong { font-size: 39px; }
   .score-board { gap: 6px; }
-  .score-caption, .score-board > span { font-size: 8px; }
   .input-section { margin-top: 10px; }
   .input-title { margin-bottom: 6px; }
   .input-title strong { font-size: 10px; }
