@@ -4,6 +4,9 @@ import HistoryPage from './pages/history/HistoryPage'
 import HitRatePage from './pages/hitRate/HitRatePage'
 import InBullRatePage from './pages/inBullRate/InBullRatePage'
 import TenMarkPage from './pages/10Mark/TenMarkPage'
+import ZeroOnePage from './pages/zeroOne/ZeroOnePage'
+import CricketCountUpPage from './pages/cricketCountUp/CricketCountUpPage'
+import MemoPage from './pages/memo/MemoPage'
 import { getDailySummary, loadRecords, saveRecord, STORAGE_EVENT, todayString } from './data/storage'
 import type { SessionRecord } from './data/storage'
 import './App.css'
@@ -12,8 +15,14 @@ const navigation = [
   { to: '/hit-rate', index: '01', label: 'HIT RATE', detail: 'ターゲット命中率' },
   { to: '/10mark', index: '02', label: '10MARK', detail: 'クリケットナンバー' },
   { to: '/in-bull', index: '03', label: 'INBULL', detail: 'ブルの精度' },
-  { to: '/history', index: '04', label: 'HISTORY', detail: 'プレイ記録' },
+  { to: '/07', index: '04', label: '07', detail: 'ゼロワン(301/501/701)' },
+  { to: '/cricket-count-up', index: '05', label: 'C C-UP', detail: 'クリケットカウントアップ' },
+  { to: '/memo', index: '06', label: 'MEMO', detail: '練習メモ' },
+  { to: '/history', index: '07', label: 'HISTORY', detail: 'プレイ記録' },
 ]
+
+// ダッシュボードに並べるゲーム(HISTORYは別リンクがあるので除外)
+const gameNavigation = navigation.filter((item) => item.to !== '/history')
 
 function DailySummary() {
   const [records, setRecords] = useState<SessionRecord[]>(loadRecords)
@@ -85,7 +94,7 @@ function Dashboard() {
 
       <section className="dashboard-grid" aria-label="練習メニュー">
         <div className="game-list">
-          {navigation.slice(0, 3).map((item) => (
+          {gameNavigation.map((item) => (
             <Link className="game-link" to={item.to} key={item.to}>
               <span className="game-index">{item.index}</span>
               <span className="game-copy"><strong>{item.label}</strong><small>{item.detail}</small></span>
@@ -138,6 +147,9 @@ function AppFrame() {
           <Route path="/10mark" element={<TenMarkPage />} />
           <Route path="/hit-rate" element={<HitRatePage />} />
           <Route path="/in-bull" element={<InBullRatePage />} />
+          <Route path="/07" element={<ZeroOnePage />} />
+          <Route path="/cricket-count-up" element={<CricketCountUpPage />} />
+          <Route path="/memo" element={<MemoPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="*" element={<Navigate to="/hit-rate" replace />} />
         </Routes>
