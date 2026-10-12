@@ -1,41 +1,13 @@
 import { useState, type FormEvent } from 'react'
+import { loadMemos, saveMemos, type MemoMap } from '../../data/memoStorage'
 
 // 日付 → その日のメモ本文。保存するたびに、その日の既存メモの末尾へ追記される。
-type MemoMap = Record<string, string>
 
-const KEY = 'darts-memos'
+const pad = (n: number) => String(n).padStart(2, '0')
 
 function today() {
   const d = new Date()
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-}
-
-function loadMemos(): MemoMap {
-  try {
-    const raw = localStorage.getItem(KEY)
-    if (!raw) return {}
-    const parsed: unknown = JSON.parse(raw)
-    // 旧形式(配列・新しい順)からの移行: 同じ日付は新しい方を採用
-    if (Array.isArray(parsed)) {
-      const map: MemoMap = {}
-      for (const item of parsed as { date?: string; text?: string }[]) {
-        if (item?.date && item.text && !(item.date in map)) map[item.date] = item.text
-      }
-      return map
-    }
-    return (parsed && typeof parsed === 'object' ? parsed : {}) as MemoMap
-  } catch {
-    return {}
-  }
-}
-
-function saveMemos(memos: MemoMap) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(memos))
-  } catch {
-    /* 保存できない環境では何もしない */
-  }
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 // 年・月・日の数字から "YYYY-MM-DD" を作る。存在しない日付なら null。
@@ -43,12 +15,59 @@ function buildDate(year: string, month: string, day: string): string | null {
   const y = Number(year)
   const m = Number(month)
   const d = Number(day)
-  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) return null
-  if (y < 1000 || y > 9999 || m < 1 || m > 12 || d < 1 || d > 31) return null
+  if (!y || !m || !d) return null
   const check = new Date(y, m - 1, d)
   if (check.getFullYear() !== y || check.getMonth() !== m - 1 || check.getDate() !== d) return null
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${y}-${p(m)}-${p(d)}`
+  return `${y}-${pad(m)}-${pad(d)}`
+}
+
+function daysInMonth(year: string, month: string) {
+  return new Date(Number(year), Number(month), 0).getDate()
+}
+
+type DatePartProps = {
+  label: string
+  unit: string
+  width: string
+  value: string
+  options: string[]
+  onChange: (value: string) => void
+}
+
+// 文字のように見える1項目。リストから選ぶだけ(枠・▼は表示しない)。
+function DatePart({ label, unit, width, value, options, onChange }: DatePartProps) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width,
+          padding: 0,
+          border: 'none',
+          background: 'transparent',
+          boxShadow: 'none',
+          color: 'inherit',
+          font: 'inherit',
+          textAlign: 'center',
+          textAlignLast: 'center',
+          cursor: 'pointer',
+          // ▼ を隠す
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          MozAppearance: 'none',
+        }}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <span aria-hidden="true">{unit}</span>
+    </span>
+  )
 }
 
 export default function MemoPage() {
@@ -58,24 +77,37 @@ export default function MemoPage() {
   const [day, setDay] = useState(() => String(Number(today().slice(8, 10))))
   const [text, setText] = useState('')
   const [saved, setSaved] = useState(false)
-  const [dateError, setDateError] = useState(false)
   // 編集中の日付と、その編集用テキスト
   const [editingDate, setEditingDate] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
+
+  const thisYear = new Date().getFullYear()
+  const yearOptions = Array.from({ length: 7 }, (_, i) => String(thisYear + 1 - i))
+  const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1))
+  const dayOptions = Array.from({ length: daysInMonth(year, month) }, (_, i) => String(i + 1))
 
   const update = (next: MemoMap) => {
     setMemos(next)
     saveMemos(next)
   }
 
+  // 年・月を変えて存在しない日(例: 2月31日)になるときは、その月の末日に合わせる
+  const changeYear = (value: string) => {
+    setYear(value)
+    setDay(String(Math.min(Number(day), daysInMonth(value, month))))
+  }
+  const changeMonth = (value: string) => {
+    setMonth(value)
+    setDay(String(Math.min(Number(day), daysInMonth(year, value))))
+  }
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const date = buildDate(year, month, day)
     if (!date) {
-      setDateError(true)
+      window.alert('存在しない日付です。年・月・日を確認してください。')
       return
     }
-    setDateError(false)
     const trimmed = text.trim()
     if (!trimmed) return
     const previous = memos[date]
@@ -115,29 +147,24 @@ export default function MemoPage() {
     if (editingDate === target) cancelEdit()
   }
 
-  const dates = Object.keys(memos).sort().reverse()
+  // 一覧に出すのは、いま選んでいる日付のメモだけ
+  const selectedDate = buildDate(year, month, day)
+  const dates = selectedDate && memos[selectedDate] ? [selectedDate] : []
 
   return (
     <div className="page-shell">
       <section className="practice-panel">
         <form className="practice-form" onSubmit={onSubmit}>
-          <div className="form-trio">
-            <label>
-              年
-              <input type="number" inputMode="numeric" min="1000" max="9999" value={year} onChange={(event) => setYear(event.target.value)} required />
-            </label>
-            <label>
-              月
-              <input type="number" inputMode="numeric" min="1" max="12" value={month} onChange={(event) => setMonth(event.target.value)} required />
-            </label>
-            <label>
-              日
-              <input type="number" inputMode="numeric" min="1" max="31" value={day} onChange={(event) => setDay(event.target.value)} required />
-            </label>
+          <div>
+            {/* 枠や背景はなし。文字として「2026年 10月 12日」と並べる */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 4 }}>
+              <DatePart label="年" unit="年" width="6ch" value={year} options={yearOptions} onChange={changeYear} />
+              <DatePart label="月" unit="月" width="4ch" value={month} options={monthOptions} onChange={changeMonth} />
+              <DatePart label="日" unit="日" width="4ch" value={day} options={dayOptions} onChange={setDay} />
+              ※左記日付に保存済みメモある場合、次回以降は末尾に追記されます
+            </div>
           </div>
-          {dateError && <p role="alert">存在しない日付です。年・月・日を確認してください。</p>}
-          <label>
-            メモ(保存すると、この日のメモの末尾に追記されます)
+
             <textarea
               rows={5}
               value={text}
@@ -145,7 +172,6 @@ export default function MemoPage() {
               placeholder="気づき・フォームの意識ポイントなど"
               style={{ width: '100%' }}
             />
-          </label>
           <button className="button button-primary full-button" type="submit">
             {saved ? '保存しました' : 'メモを保存'} <span aria-hidden="true">↗</span>
           </button>
@@ -153,7 +179,7 @@ export default function MemoPage() {
       </section>
 
       <section aria-label="メモ一覧" style={{ marginTop: 24, display: 'grid', gap: 12 }}>
-        {dates.length === 0 && <p>メモはまだありません。</p>}
+        {dates.length === 0 && <p>この日のメモはまだありません。</p>}
         {dates.map((d) => (
           <article key={d} className="practice-panel">
             <div className="panel-title-row">
