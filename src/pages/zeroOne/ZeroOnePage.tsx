@@ -169,59 +169,54 @@ export default function ZeroOnePage() {
         </div>
 
         <div className="daily-summary" style={{ marginTop: 16 }}>
-          <div className="daily-summary-item"><span>残り</span><strong>{remaining}</strong></div>
-          <div className="daily-summary-item"><span>ラウンド</span><strong>{turns.length}<small> / {MAX_ROUNDS}</small></strong></div>
+          <div className="daily-summary-item"><strong>{remaining}</strong></div>
+          <div className="daily-summary-item"><strong>{turns.length}<small> / {MAX_ROUNDS}</small></strong></div>
           <div className="daily-summary-item"><span>PPR</span><strong>{ppr}</strong></div>
         </div>
 
-        {!started ? (
-          <p style={{ marginTop: 16 }}>点数を選んで「開始」を押してください。(301・501・701 とも上限 {MAX_ROUNDS} ラウンド)</p>
-        ) : finished ? (
-          <p style={{ marginTop: 16 }}>
-            <strong>FINISH!</strong> {turns.length}ラウンドで上がりました。
-          </p>
-        ) : (
-          <form
-            className="practice-form"
-            onSubmit={onSubmit}
-            style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}
-          >
-            <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-              <input
-                type="number"
-                min="0"
-                max="180"
-                inputMode="numeric"
-                aria-label="このラウンドの得点 (0〜180)"
-                placeholder="得点 (0〜180)"
-                value={input}
-                onChange={(event) => onInputChange(event.target.value)}
-                required
+
+        <form
+          className="practice-form"
+          onSubmit={onSubmit}
+          style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}
+        >
+          <div style={{ display: 'flex', gap: 8 }}>
+            {darts.map((dart, i) => (
+              <button
+                key={i}
+                className={`button ${dart ? 'button-primary' : ''}`}
+                type="button"
+                onClick={() => {
+                  setTimes(1)
+                  setActiveDart(i)
+                }}
                 style={{ flex: 1, minWidth: 0 }}
-              />
-              <button className="button button-primary" type="submit">
-                入力 <span aria-hidden="true">↗</span>
+              >
+                Dart{i + 1}
+                {dart ? `: ${dart.label}` : ''}
               </button>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {darts.map((dart, i) => (
-                <button
-                  key={i}
-                  className={`button ${dart ? 'button-primary' : ''}`}
-                  type="button"
-                  onClick={() => {
-                    setTimes(1)
-                    setActiveDart(i)
-                  }}
-                  style={{ flex: 1, minWidth: 0 }}
-                >
-                  Dart{i + 1}
-                  {dart ? `: ${dart.label}` : ''}
-                </button>
-              ))}
-            </div>
-          </form>
-        )}
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+            <input
+              type="number"
+              min="0"
+              max="180"
+              inputMode="numeric"
+              aria-label="このラウンドの得点 (0〜180)"
+              placeholder="得点 (0〜180)"
+              value={input}
+              onChange={(event) => onInputChange(event.target.value)}
+              required
+              style={{ flex: 1, minWidth: 0 }}
+            />
+            <button className="button button-primary" type="submit">
+              入力 <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+
+        </form>
+
       </section>
 
       {activeDart !== null && (
@@ -263,10 +258,10 @@ export default function ZeroOnePage() {
               <button
                 type="button"
                 className="button"
-                onClick={() => chooseDart({ label: 'BULL', value: 25 })}
+                onClick={() => chooseDart({ label: 'BULL', value: 50 })}
                 style={{ flex: 1 }}
               >
-                ブル (25)
+                BULL (50)
               </button>
               <button
                 type="button"
@@ -274,7 +269,7 @@ export default function ZeroOnePage() {
                 onClick={() => chooseDart({ label: 'INBULL', value: 50 })}
                 style={{ flex: 1 }}
               >
-                インブル (50)
+                INBULL (50)
               </button>
               <button
                 type="button"
