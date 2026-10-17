@@ -17,6 +17,9 @@ const MULTIPLIERS = [
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1)
 const DART_COUNT = 3
 
+// ポップアップ内のボタンは、狭い画面でも収まるよう余白と文字を小さめにする
+const compact = { flex: 1, minWidth: 0, padding: '8px 4px', fontSize: 14 } as const
+
 type Turn = { score: number; bust: boolean; remainingAfter: number }
 
 // 得点の並びから各ラウンドの結果を計算する。上がり(0)に達したらそこで終わり。
@@ -47,7 +50,8 @@ export default function ZeroOnePage() {
   // ダート1〜3の選択結果と、ポップアップの状態
   const [darts, setDarts] = useState<(Dart | null)[]>(() => Array(DART_COUNT).fill(null))
   const [activeDart, setActiveDart] = useState<number | null>(null)
-  const [times, setTimes] = useState<number>(1)
+  // ポップアップ内で先に選んだ数字(次にシングル/ダブル/トリプルを選ぶ)
+  const [pickedNumber, setPickedNumber] = useState<number | null>(null)
 
   useEffect(() => {
     if (activeDart === null) return
@@ -84,6 +88,12 @@ export default function ZeroOnePage() {
     setDarts(next)
     setInput(String(next.reduce((sum, d) => sum + (d?.value ?? 0), 0)))
     setActiveDart(null)
+    setPickedNumber(null)
+  }
+
+  const closeDialog = () => {
+    setActiveDart(null)
+    setPickedNumber(null)
   }
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -110,7 +120,7 @@ export default function ZeroOnePage() {
     setScores([])
     setInput('')
     clearDarts()
-    setActiveDart(null)
+    closeDialog()
     cancelEdit()
   }
 
@@ -187,7 +197,7 @@ export default function ZeroOnePage() {
                 className={`button ${dart ? 'button-primary' : ''}`}
                 type="button"
                 onClick={() => {
-                  setTimes(1)
+                  setPickedNumber(null)
                   setActiveDart(i)
                 }}
                 style={{ flex: 1, minWidth: 0 }}
@@ -222,7 +232,7 @@ export default function ZeroOnePage() {
       {activeDart !== null && (
         <div
           role="presentation"
-          onClick={() => setActiveDart(null)}
+          onClick={closeDialog}
           style={{
             position: 'fixed',
             inset: 0,
@@ -230,7 +240,7 @@ export default function ZeroOnePage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 16,
+            padding: 8,
             background: 'rgba(0, 0, 0, 0.5)',
           }}
         >
@@ -242,24 +252,35 @@ export default function ZeroOnePage() {
             style={{
               width: '100%',
               maxWidth: 420,
-              maxHeight: '90vh',
+              maxHeight: 'calc(100dvh - 16px)',
               overflowY: 'auto',
-              padding: 16,
+              padding: 12,
               borderRadius: 12,
               background: 'Canvas',
               color: 'CanvasText',
               display: 'grid',
-              gap: 12,
+              gap: 8,
             }}
           >
-            <strong>Dart{activeDart + 1}</strong>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong>Dart{activeDart + 1}</strong>
+              <button
+                type="button"
+                className="button"
+                aria-label="閉じる"
+                onClick={closeDialog}
+                style={{ padding: '4px 10px', fontSize: 14 }}
+              >
+                ✕
+              </button>
+            </div>
 
             <div style={{ display: 'flex', gap: 8 }}>
               <button
                 type="button"
                 className="button"
                 onClick={() => chooseDart({ label: 'BULL', value: 50 })}
-                style={{ flex: 1 }}
+                style={compact}
               >
                 BULL (50)
               </button>
@@ -267,7 +288,7 @@ export default function ZeroOnePage() {
                 type="button"
                 className="button"
                 onClick={() => chooseDart({ label: 'INBULL', value: 50 })}
-                style={{ flex: 1 }}
+                style={compact}
               >
                 INBULL (50)
               </button>
@@ -275,46 +296,49 @@ export default function ZeroOnePage() {
                 type="button"
                 className="button"
                 onClick={() => chooseDart({ label: 'MISS', value: 0 })}
-                style={{ flex: 1 }}
+                style={compact}
               >
                 ミス (0)
               </button>
             </div>
+
+            {/* ① 先に数字を選ぶ */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 }}>
+              {NUMBERS.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={`button ${pickedNumber === n ? 'button-primary' : ''}`}
+                  aria-pressed={pickedNumber === n}
+                  onClick={() => setPickedNumber(n)}
+                  style={{ padding: '8px 0', fontSize: 14 }}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+
+            {/* ② 数字を選んだあとで、シングル/ダブル/トリプルを選ぶ(選ぶと確定) */}
             <div style={{ display: 'flex', gap: 8 }} role="group" aria-label="シングル・ダブル・トリプル">
               {MULTIPLIERS.map((m) => (
                 <button
                   key={m.times}
                   type="button"
-                  className={`button ${times === m.times ? 'button-primary' : ''}`}
-                  aria-pressed={times === m.times}
-                  onClick={() => setTimes(m.times)}
-                  style={{ flex: 1 }}
+                  className="button"
+                  disabled={pickedNumber === null}
+                  onClick={() =>
+                    pickedNumber !== null &&
+                    chooseDart({ label: `${m.prefix}${pickedNumber}`, value: pickedNumber * m.times })
+                  }
+                  style={compact}
                 >
-                  {m.name}
+                  <span style={{ display: 'block' }}>{m.name}</span>
+                  <span style={{ display: 'block', fontSize: 12 }}>
+                    {pickedNumber !== null ? pickedNumber * m.times : '-'}
+                  </span>
                 </button>
               ))}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-              {NUMBERS.map((n) => {
-                const prefix = MULTIPLIERS.find((m) => m.times === times)?.prefix ?? 'S'
-                return (
-                  <button
-                    key={n}
-                    type="button"
-                    className="button"
-                    onClick={() => chooseDart({ label: `${prefix}${n}`, value: n * times })}
-                  >
-                    {n}
-                  </button>
-                )
-              })}
-            </div>
-
-
-
-            <button type="button" className="button" onClick={() => setActiveDart(null)}>
-              キャンセル
-            </button>
           </div>
         </div>
       )}
